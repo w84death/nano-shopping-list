@@ -1,9 +1,5 @@
 Buy this:
-- 1L x  Milk  from Lidl
-- 2 x  Bread  from Bakery
-- Fuel
-- liquid  from eSmoking
-- 2kg x  Potatos  from Lidl
+- 1 x  test  from Lidl
 
 
 -- 

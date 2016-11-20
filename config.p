@@ -1,0 +1,12 @@
+(lp1
+(lp2
+S'nanoshoppinglist@p1x.in'
+p3
+aS'w84death@gmail.com'
+p4
+aa(lp5
+S'main'
+p6
+aS'second'
+p7
+aa.

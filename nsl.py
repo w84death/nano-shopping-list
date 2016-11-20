@@ -16,13 +16,26 @@ import cPickle as pickle
 import smtplib
 from email.mime.text import MIMEText
 
-last_selected_item = False
+last_selected_item = -1
+config = [
+	['nanoshoppinglist@p1x.in', 'w84death@gmail.com'], # mail from, mail to
+	['main', 'second'] # default shopping lists
+]
 
-def list_initialize():
+def initialize_db():
 	global shopping_list_array
 	shopping_list_array = []
 	if(os.path.isfile("save.p")):
 		load_list_from_db()
+	else:
+		save_list_to_db()
+	if(os.path.isfile("config.p")):
+		load_config_from_db()
+	else:
+		save_config_to_db()
+
+def load_default_list():
+	load_list_from_db()
 	update_list()
 	latest_status.set('Latest list opened from database.')
 
@@ -34,11 +47,19 @@ def load_list_from_db():
 	global shopping_list_array
 	shopping_list_array = pickle.load( open( "save.p", "rb" ) )
 
+def save_config_to_db():
+	global config
+	pickle.dump( config, open( "config.p", "wb" ) )
+
+def load_config_from_db():
+	global config
+	config = pickle.load( open( "config.p", "rb" ) )
+
 def clear_list():
 	global shopping_list_array
 	shopping_list_array = []
 	update_list()
-	latest_status.set('List cleared')
+	latest_status.set('List cleared but not saved. Restart to recover.')
 
 def update_list():
 	lbshopping.delete(0, END)
@@ -68,7 +89,9 @@ def add_to_list():
 		update_list()
 		save_list_to_db()
 		clear_inputs_and_focus()
-	latest_status.set('Item added to the list')
+		latest_status.set('Item added to the list')
+	else:
+		latest_status.set('Item name is requied!')
 
 def clear_inputs_and_focus():
 	global equantity, eshop, eitem, last_selected_item
@@ -76,7 +99,7 @@ def clear_inputs_and_focus():
 	eshop.delete(0, END)
 	equantity.delete(0, END)
 	eitem.focus()
-	last_selected_item = False
+	last_selected_item = -1
 
 def selected_item():
 	global lbshopping
@@ -85,39 +108,42 @@ def selected_item():
 	else:
 		return False
 
+def is_item_selected():
+	global lbshopping
+	return lbshopping.curselection()
+
 def load_selected_item():
 	global shopping_list_array, last_selected_item
 	global new_item_name, new_item_quantity, new_item_shop, eitem
-	last_selected_item = selected_item()
-	if last_selected_item:
+	if is_item_selected():
+		last_selected_item = selected_item()
 		item, quantity, shop = shopping_list_array[last_selected_item]
 		new_item_quantity.set(quantity)
 		new_item_name.set(item)
 		new_item_shop.set(shop)
 		update_input_buttons()
 		eitem.focus()
-	latest_status.set('Item ready to edit')
+	latest_status.set('Item ready to edit. Update without edits to cancel.')
 
 def update_item_in_list():
 	global shopping_list_array, edit_mode, last_selected_item
 	global new_item_name, new_item_quantity, new_item_shop
-	if last_selected_item:
+	if last_selected_item > -1:
 		shopping_list_array[last_selected_item] = [new_item_name.get(), new_item_quantity.get(), new_item_shop.get()]
 		update_list()
 		save_list_to_db()
 		clear_inputs_and_focus()
-		last_selected_item = False
 		update_input_buttons()
-		latest_status.set('Item updated')
+		latest_status.set('Item updated. List saved.')
 
 def remove_item_in_list():
 	global shopping_list_array
-	if selected_item():
+	if is_item_selected():
 		del shopping_list_array[selected_item()]
 		update_list()
 		save_list_to_db()
 		clear_inputs_and_focus()
-		latest_status.set('Item removed')
+		latest_status.set('Item removed. List saved.')
 
 
 def save_plain_list():
@@ -128,11 +154,12 @@ def save_plain_list():
 		file_.write('- ' + format_list_entry(quantity, item, shop) + '\n')
 	file_.write('\n\n-- \nYour Nano Shopping List\n')
 	file_.close()
-	latest_status.set('Shoppring list saved to plain-list.txt')
+	latest_status.set('Shoppring list saved to plain-list.txt.')
 
 def mail_shopping_list():
-	mail_from = 'nanoshoppinglist@p1x.in'
-	mail_to = 'w84death@gmail.com'
+	global config
+	mail_from = config[0][0]
+	mail_to = config[0][1]
 	save_plain_list()
 	fp = open('plain-list.txt', 'rb')
 	mail_msg = MIMEText(fp.read())
@@ -152,7 +179,7 @@ def dumb_callback():
 
 def update_input_buttons():
 	global bupdate, badd, last_selected_item
-	if last_selected_item:
+	if last_selected_item > -1:
 		badd.config(state='disabled')
 		bupdate.config(state='normal')
 	else:
@@ -173,7 +200,7 @@ def make_window():
 
 	mfile = Menu(menu)
 	menu.add_cascade(label="List", menu=mfile)
-	mfile.add_command(label="Send mail", command=mail_shopping_list)
+	mfile.add_command(label="Send to " + config[0][1], command=mail_shopping_list)
 	mfile.add_command(label="Save as txt file", command=save_plain_list)
 	mfile.add_command(label="Clear list", command=clear_list)
 
@@ -181,12 +208,6 @@ def make_window():
 	menu.add_cascade(label="Selected", menu=mselected)
 	mselected.add_command(label="Edit item", command=load_selected_item)
 	mselected.add_command(label="Remove item", command=remove_item_in_list)
-
-	# mabout = Menu(menu)
-	# menu.add_cascade(label="Info", menu=mabout)
-	# mabout.add_command(label="About", command=dumb_callback)
-	# mabout.add_command(label="Licence", command=dumb_callback)
-	# mabout.add_command(label="Contribute", command=dumb_callback)
 
 	latest_status = StringVar()
 	status = Label(win, textvariable=latest_status, bd=1, relief=SUNKEN, anchor=W)
@@ -233,5 +254,6 @@ def make_window():
 	return win
 
 win = make_window()
-list_initialize()
+initialize_db()
+load_default_list()
 win.mainloop()
