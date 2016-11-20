@@ -1,37 +1,33 @@
 (lp1
 (lp2
-S'mleko ryzowwe'
+S'Milk'
 p3
-aS'2'
-aS''
-aa(lp4
-S'owsianka'
-p5
-aS'2 paczki'
-p6
-aS'PiP'
-p7
-aa(lp8
-S'suszona zurawina'
-p9
-aS'1'
-aS''
-aa(lp10
-S'mleko ryzowe'
-p11
-aS''
-aS''
-aa(lp12
-S'suszona zurawina'
-p13
-aS'1 paczka'
-p14
-aS'PiP'
-p15
-aa(lp16
-S'test2'
-p17
-aS'1'
+aS'1L'
+p4
 aS'Lidl'
-p18
+p5
+aa(lp6
+S'Bread'
+p7
+aS'2'
+aS'Bakery'
+p8
+aa(lp9
+S'Fuel'
+p10
+aS''
+aS''
+aa(lp11
+S'liquid'
+p12
+aS''
+aS'eSmoking'
+p13
+aa(lp14
+S'Potatos'
+p15
+aS'2kg'
+p16
+aS'Lidl'
+p17
 aa.

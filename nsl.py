@@ -11,7 +11,6 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 
-edit_mode = False
 last_selected_item = False
 
 def list_initialize():
@@ -149,8 +148,10 @@ def dumb_callback():
 def update_input_buttons():
 	global bupdate, badd, last_selected_item
 	if last_selected_item:
+		badd.config(state='disabled')
 		bupdate.config(state='normal')
 	else:
+		badd.config(state='normal')
 		bupdate.config(state='disabled')
 
 def make_window():
