@@ -1,15 +1,20 @@
 # Nano Shopping List
-# Useful sopping list creator with mail sender
+# Useful sopping list with mail sender
+#
+# github: https://github.com/w84death/nano-shopping-list
+# donate:
+# - bitcoin wallet address: 18oHovhxpevALZFcjH3mgNKB1yLi3nNFRY
+# - paypal adress: w84death@gmail.com
 #
 # Krzysztof Jankowski
 # (c)2016 P1X 
 
 import os.path
+import time
 from Tkinter import *
 import cPickle as pickle
 import smtplib
 from email.mime.text import MIMEText
-import time
 
 last_selected_item = False
 
