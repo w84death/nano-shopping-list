@@ -11,33 +11,36 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 
+edit_mode = False
+last_selected_item = False
+
 def list_initialize():
-	global log_data
-	log_data = []
+	global shopping_list_array
+	shopping_list_array = []
 	if(os.path.isfile("save.p")):
 		load_list_from_db()
 	update_list()
 	latest_status.set('Latest list opened from database.')
 
 def save_list_to_db():
-	global log_data
-	pickle.dump( log_data, open( "save.p", "wb" ) )
+	global shopping_list_array
+	pickle.dump( shopping_list_array, open( "save.p", "wb" ) )
 
 def load_list_from_db():
-	global log_data
-	log_data = pickle.load( open( "save.p", "rb" ) )
+	global shopping_list_array
+	shopping_list_array = pickle.load( open( "save.p", "rb" ) )
 
 def clear_list():
-	global log_data
-	log_data = []
+	global shopping_list_array
+	shopping_list_array = []
 	update_list()
 	latest_status.set('List cleared')
 
 def update_list():
-	loglist.delete(0, END)
-	for item, quantity, shop in log_data:
-		loglist.insert(END, format_list_entry(quantity, item, shop))
-	loglist.pack()
+	lbshopping.delete(0, END)
+	for item, quantity, shop in shopping_list_array:
+		lbshopping.insert(END, format_list_entry(quantity, item, shop))
+	lbshopping.pack()
 
 def format_list_entry(quantity, item, shop):
 	list_entry = ''
@@ -50,36 +53,84 @@ def format_list_entry(quantity, item, shop):
 
 
 def add_to_list():
-	global log_data
-	global equantity, eshop, eitem, latest_status
+	global shopping_list_array
+	global new_item_name, new_item_quantity, new_item_shop
 
 	item = new_item_name.get()
 	quantity = new_item_quantity.get()
 	shop = new_item_shop.get()
 	if(item):
-		log_data.append ([item, quantity, shop])
+		shopping_list_array.append ([item, quantity, shop])
 		update_list()
 		save_list_to_db()
+		clear_inputs_and_focus()
+	latest_status.set('Item added to the list')
+
+def clear_inputs_and_focus():
+	global equantity, eshop, eitem, last_selected_item
 	eitem.delete(0, END)
 	eshop.delete(0, END)
 	equantity.delete(0, END)
 	eitem.focus()
-	latest_status.set('Item added to the list')
+	last_selected_item = False
+
+def selected_item():
+	global lbshopping
+	if lbshopping.curselection():
+		return int(lbshopping.curselection()[0])
+	else:
+		return False
+
+def load_selected_item():
+	global shopping_list_array, last_selected_item
+	global new_item_name, new_item_quantity, new_item_shop, eitem
+	last_selected_item = selected_item()
+	if last_selected_item:
+		item, quantity, shop = shopping_list_array[last_selected_item]
+		new_item_quantity.set(quantity)
+		new_item_name.set(item)
+		new_item_shop.set(shop)
+		update_input_buttons()
+		eitem.focus()
+	latest_status.set('Item ready to edit')
+
+def update_item_in_list():
+	global shopping_list_array, edit_mode, last_selected_item
+	global new_item_name, new_item_quantity, new_item_shop
+	if last_selected_item:
+		shopping_list_array[last_selected_item] = [new_item_name.get(), new_item_quantity.get(), new_item_shop.get()]
+		update_list()
+		save_list_to_db()
+		clear_inputs_and_focus()
+		last_selected_item = False
+		update_input_buttons()
+		latest_status.set('Item updated')
+
+def remove_item_in_list():
+	global shopping_list_array
+	if selected_item():
+		del shopping_list_array[selected_item()]
+		update_list()
+		save_list_to_db()
+		clear_inputs_and_focus()
+		latest_status.set('Item removed')
+
 
 def save_plain_list():
-	global log_data
-	file_ = open('mail.txt', 'w')
+	global shopping_list_array
+	file_ = open('plain-list.txt', 'w')
 	file_.write('Buy this:\n')
-	for item, quantity, shop in log_data:
+	for item, quantity, shop in shopping_list_array:
 		file_.write('- ' + format_list_entry(quantity, item, shop) + '\n')
 	file_.write('\n\n-- \nYour Nano Shopping List\n')
 	file_.close()
+	latest_status.set('Shoppring list saved to plain-list.txt')
 
 def mail_shopping_list():
 	mail_from = 'nanoshoppinglist@p1x.in'
 	mail_to = 'w84death@gmail.com'
 	save_plain_list()
-	fp = open('mail.txt', 'rb')
+	fp = open('plain-list.txt', 'rb')
 	mail_msg = MIMEText(fp.read())
 	fp.close()
 
@@ -95,9 +146,16 @@ def mail_shopping_list():
 def dumb_callback():
 	return
 
+def update_input_buttons():
+	global bupdate, badd, last_selected_item
+	if last_selected_item:
+		bupdate.config(state='normal')
+	else:
+		bupdate.config(state='disabled')
+
 def make_window():
-	global loglist, new_item_name, new_item_quantity, new_item_shop
-	global equantity, eshop, eitem, latest_status
+	global lbshopping, new_item_name, new_item_quantity, new_item_shop
+	global equantity, eshop, eitem, latest_status, bupdate, badd
 
 	win = Tk()
 	win.wm_title("Nano Shopping List")
@@ -113,16 +171,16 @@ def make_window():
 	mfile.add_command(label="Save as txt file", command=save_plain_list)
 	mfile.add_command(label="Clear list", command=clear_list)
 
-	msettings = Menu(menu)
-	menu.add_cascade(label="Settings", menu=msettings)
-	msettings.add_command(label="Mail adresses", command=dumb_callback)
-	msettings.add_command(label="Databases", command=dumb_callback)
+	mselected = Menu(menu)
+	menu.add_cascade(label="Selected", menu=mselected)
+	mselected.add_command(label="Edit item", command=load_selected_item)
+	mselected.add_command(label="Remove item", command=remove_item_in_list)
 
-	mabout = Menu(menu)
-	menu.add_cascade(label="Info", menu=mabout)
-	mabout.add_command(label="About", command=dumb_callback)
-	mabout.add_command(label="Licence", command=dumb_callback)
-	mabout.add_command(label="Contribute", command=dumb_callback)
+	# mabout = Menu(menu)
+	# menu.add_cascade(label="Info", menu=mabout)
+	# mabout.add_command(label="About", command=dumb_callback)
+	# mabout.add_command(label="Licence", command=dumb_callback)
+	# mabout.add_command(label="Contribute", command=dumb_callback)
 
 	latest_status = StringVar()
 	status = Label(win, textvariable=latest_status, bd=1, relief=SUNKEN, anchor=W)
@@ -134,10 +192,10 @@ def make_window():
 	flog = Frame(win)
 	flog.pack()
 	scroll = Scrollbar(flog, orient=VERTICAL)
-	loglist = Listbox(flog, yscrollcommand=scroll.set, height=7, width=40)
-	scroll.config(command=loglist.yview)
+	lbshopping = Listbox(flog, yscrollcommand=scroll.set, height=7, width=40)
+	scroll.config(command=lbshopping.yview)
 	scroll.pack(side=RIGHT, fill=Y)
-	loglist.pack(side=LEFT, fill=BOTH, expand=1)
+	lbshopping.pack(side=LEFT, fill=BOTH, expand=1)
 
 	gitem = LabelFrame(win, text="Shoping item", padx=4, pady=4)
 	gitem.pack(padx=10, pady=10)
@@ -159,15 +217,12 @@ def make_window():
 
 	fbuttons = Frame(gitem)
 	fbuttons.pack(pady=4)
-	btn_add = Button(fbuttons, text="Add", command=add_to_list)
-	btn_edit = Button(fbuttons, text="Edit", command=dumb_callback)
-	btn_remove = Button(fbuttons, text="Remove", command=dumb_callback)
-	btn_edit.config(state='disabled')
-	btn_remove.config(state='disabled')
-	btn_add.pack(side=LEFT, padx=4)
-	btn_edit.pack(side=LEFT, padx=4)
-	btn_remove.pack(side=LEFT, padx=4)
-
+	badd = Button(fbuttons, text="Add", command=add_to_list)
+	bupdate = Button(fbuttons, text="Update", command=update_item_in_list)
+	bupdate.config(state='disabled')
+	badd.pack(side=LEFT, padx=4)
+	bupdate.pack(side=LEFT, padx=4)
+	
 	eitem.focus()
 	return win
 
