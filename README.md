@@ -6,7 +6,13 @@ Written in Python2 using Tkinter, Pickle and smtplib
 
 # Screens
 
-![Main windoww](https://i.imgur.com/125dDww.png) ![Menus](https://i.imgur.com/iCZXebW.png)
+## OpenSUSE (KDE)
+![Main window](https://i.imgur.com/125dDww.png)
+
+## Fedora (Gnome)
+![Main window](https://i.imgur.com/egeb2m0.png)
+
+## macOS
 
 # Setup
 
