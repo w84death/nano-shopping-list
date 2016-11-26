@@ -66,6 +66,7 @@ def update_list():
 	for item, quantity, shop in shopping_list_array:
 		lbshopping.insert(END, format_list_entry(quantity, item, shop))
 	lbshopping.pack()
+        lbshopping.yview(END)
 
 def format_list_entry(quantity, item, shop):
 	list_entry = ''
@@ -111,6 +112,7 @@ def selected_item():
 def is_item_selected():
 	global lbshopping
 	return lbshopping.curselection()
+    
 
 def load_selected_item():
 	global shopping_list_array, last_selected_item
@@ -187,7 +189,7 @@ def update_input_buttons():
 		bupdate.config(state='disabled')
 
 def make_window():
-	global lbshopping, new_item_name, new_item_quantity, new_item_shop
+	global lbshopping, scroll, new_item_name, new_item_quantity, new_item_shop
 	global equantity, eshop, eitem, latest_status, bupdate, badd
 
 	win = Tk()
@@ -219,7 +221,7 @@ def make_window():
 	flog = Frame(win)
 	flog.pack()
 	scroll = Scrollbar(flog, orient=VERTICAL)
-	lbshopping = Listbox(flog, yscrollcommand=scroll.set, height=7, width=40)
+	lbshopping = Listbox(flog, yscrollcommand=scroll.set, height=16, width=40)
 	scroll.config(command=lbshopping.yview)
 	scroll.pack(side=RIGHT, fill=Y)
 	lbshopping.pack(side=LEFT, fill=BOTH, expand=1)
