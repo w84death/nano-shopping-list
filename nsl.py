@@ -169,7 +169,7 @@ def mail_shopping_list():
 	mail_msg['From'] = mail_from
 	mail_msg['To'] = mail_to
 
-	s = smtplib.SMTP('localhost')
+	s = smtplib.SMTP('127.0.0.1', 25)
 	s.sendmail(mail_from, [mail_to], mail_msg.as_string())
 	s.quit()
 	latest_status.set('List mailed to ' + mail_to)
