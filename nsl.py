@@ -188,6 +188,21 @@ def update_input_buttons():
 		badd.config(state='normal')
 		bupdate.config(state='disabled')
 
+def list_resize(new_width, new_height):
+    global lbshopping
+    lbshopping.config(width=new_width, height=new_height)
+    lbshopping.pack()
+
+
+def view_small_list():
+    list_resize(32, 12)
+
+def view_medium_list():
+    list_resize(36, 18)
+
+def view_big_list():
+    list_resize(40, 24)
+
 def make_window():
 	global lbshopping, scroll, new_item_name, new_item_quantity, new_item_shop
 	global equantity, eshop, eitem, latest_status, bupdate, badd
@@ -211,6 +226,12 @@ def make_window():
 	mselected.add_command(label="Edit item", command=load_selected_item)
 	mselected.add_command(label="Remove item", command=remove_item_in_list)
 
+        mview = Menu(menu)
+        menu.add_cascade(label="View", menu=mview)
+        mview.add_command(label="Small list", command=view_small_list)
+        mview.add_command(label="Medium list", command=view_medium_list)
+        mview.add_command(label="Big list", command=view_big_list)
+
 	latest_status = StringVar()
 	status = Label(win, textvariable=latest_status, bd=1, relief=SUNKEN, anchor=W)
 	status.pack(side=BOTTOM, fill=X)
@@ -221,7 +242,7 @@ def make_window():
 	flog = Frame(win)
 	flog.pack()
 	scroll = Scrollbar(flog, orient=VERTICAL)
-	lbshopping = Listbox(flog, yscrollcommand=scroll.set, height=16, width=40)
+	lbshopping = Listbox(flog, yscrollcommand=scroll.set, height=18, width=36)
 	scroll.config(command=lbshopping.yview)
 	scroll.pack(side=RIGHT, fill=Y)
 	lbshopping.pack(side=LEFT, fill=BOTH, expand=1)
