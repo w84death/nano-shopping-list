@@ -61,22 +61,28 @@ def clear_list():
 	update_list()
 	latest_status.set('List cleared but not saved. Restart to recover.')
 
+def sort_list_array():
+        global shopping_list_array
+        shopping_list_array = sorted(shopping_list_array, key=lambda item: item[2])
+            
 def update_list():
 	lbshopping.delete(0, END)
-	for item, quantity, shop in shopping_list_array:
+        sort_list_array()
+        for item, quantity, shop in shopping_list_array:
 		lbshopping.insert(END, format_list_entry(quantity, item, shop))
 	lbshopping.pack()
         lbshopping.yview(END)
 
 def format_list_entry(quantity, item, shop):
 	list_entry = ''
-	if quantity:
-		list_entry += quantity + ' x  '
+        if shop:
+            list_entry += shop + ' > '
+        else:
+            list_entry += '* > '
 	list_entry += item
-	if shop:
-		list_entry += '  from ' + shop
+        if quantity:
+	    list_entry += ' (' + quantity + ')'
 	return list_entry.encode('ascii', 'ignore').decode('ascii')
-
 
 def add_to_list():
 	global shopping_list_array
