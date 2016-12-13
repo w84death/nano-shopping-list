@@ -1,8 +1,32 @@
 (lp1
 (lp2
-S'Sample item'
+S'salata'
 p3
-aS'1'
-aS'Mall'
+aS''
+aS'Lidl'
 p4
+aa(lp5
+S'awokado'
+p6
+aS''
+aS'Lidl'
+p7
+aa(lp8
+S'Papier toaletowy'
+p9
+aS''
+aS'Lidl'
+p10
+aa(lp11
+S'glony'
+p12
+aS''
+aS'PiP'
+p13
+aa(lp14
+S'ryz do sushi'
+p15
+aS''
+aS'PiP'
+p16
 aa.
